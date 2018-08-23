@@ -12,7 +12,7 @@ public class LomutoPerfectHashTable {
 	public int storage_size;
 	public int data_size;
 	
-	LomutoPerfectHashTable(int size){
+	public LomutoPerfectHashTable(int size){
 		this.storage_size = size;
 		this.values = new Object[this.storage_size][];
 	}
@@ -24,9 +24,9 @@ public class LomutoPerfectHashTable {
 		
 		this.data_size = keys.length;
 		this.load_factor = this.data_size / this.storage_size;
-		buckets_capacity = (byte)(Math.ceil(load_factor) * 2);
+		buckets_capacity = (byte)(Math.pow(Math.ceil(load_factor), 2) + load_factor);
 		this.buckets = new Object[this.storage_size][buckets_capacity][2];
-		this.buckets_load = new byte[buckets_capacity];
+		this.buckets_load = new byte[this.storage_size];
 		
 		hashValues(keys, data);
 	}
@@ -41,12 +41,12 @@ public class LomutoPerfectHashTable {
 		}
 		
 		for(int i = 0; i < this.storage_size; i++) {
-			int outerSlot = FNVHash.hash((String)buckets[i][0][0]) % this.storage_size;
 			if(buckets_load[i] == 0)
 				continue;
+						
 			int values_secondary_size = (int)Math.pow(buckets_load[i], 2);
 			
-			this.values[outerSlot] = new Object[values_secondary_size + 2];
+			this.values[i] = new Object[values_secondary_size + 2];
 			
 			int item = 0;
 			int offset = 0;
@@ -57,32 +57,35 @@ public class LomutoPerfectHashTable {
 			
 			Object slots[] = new Object[buckets_load[i]];
 			while(item < buckets_load[i]) {
-				int slot = FNVHash.hash((String)buckets[i][item][0], offset) % values_secondary_size;
+				int hsh = FNVHash.hash((String)buckets[i][item][0], offset);
+				int slot =  hsh % values_secondary_size;
 
 				//check if slot exists in slots so far using linear search.
 				boolean slotExists = false;
 				for(int j = 0; j < item; j++) {
-					if((int)slots[j] == slot) {
+					if(slots[j] != null && (int)slots[j] == slot) {
 						slotExists = true;
 						break;
 					}
 				};
 				
-				if(slotExists || this.values[outerSlot][slot + 2] != null) {
+				if(slotExists || this.values[i][slot + 2] != null) {
 					offset++;
 					item = 0;
 					slots = new Object[buckets_load[i]];
 					
 				} else {
-					item++;
 					slots[item] = slot;
+					item++;
 				}
 			}
 			
-			this.values[outerSlot][0] = offset;
-			this.values[outerSlot][1] = values_secondary_size;
+			this.values[i][0] = offset;
+			this.values[i][1] = values_secondary_size;
 			for(int j = 0; j < buckets_load[i]; j++) {
-				this.values[outerSlot][(int)slots[j] + 2] = data[(int)this.buckets[i][j][1]];
+				int key_idx = (int)this.buckets[i][j][1];
+				Object v = data[key_idx];
+				this.values[i][(int)slots[j] + 2] = v;
 			}
 		}
 	}
@@ -91,7 +94,7 @@ public class LomutoPerfectHashTable {
 		int b = FNVHash.hash(key) % this.storage_size;
 		int d = (int)this.values[b][0];
 		int m = (int)this.values[b][1];
-		int finalSlot = FNVHash.hash(key, d) % m;
-		return this.values[b][finalSlot];
+		int c = FNVHash.hash(key, d) % m;
+		return this.values[b][c + 2];
 	}
 }

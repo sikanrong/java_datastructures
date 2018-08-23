@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.sikanrong.practice.datastructures.hashtable.LomutoPerfectHashTable;
 import com.sikanrong.practice.datastructures.hashtable.hashfunction.FNVHash;
 
+import org.json.*;
+
 import org.junit.jupiter.api.Test;
 
 class HashtableTest {
@@ -17,14 +19,36 @@ class HashtableTest {
 			hashes[i] = (FNVHash.hash(examples[i]));
 		}
 		
-		int expected[] = {865084711, 954784505, 1166462341, 452284363};
+		int expected[] = {310551791, 192771031, 1586795959, 1852403975};
 		
-		assertArrayEquals(hashes, expected);
+		assertArrayEquals(expected, hashes);
 	}
 	
 	@Test
-	void testLomutoPerfectHashTable() {
+	void testLomutoPerfectHashTable() throws Exception {
+		//read test data 
+		JSONTokener tokenizer = new JSONTokener(getClass().getResourceAsStream("./resources/testdata.json"));
+		JSONObject test_data = new JSONObject(tokenizer);
 		
+		String keys[] = new String[test_data.length()];
+		Object data[] = new Object[keys.length];
+		//Extract the keys and values from test_data into primitive arrays
+		test_data.keySet().toArray(keys);
+		for(int i = 0; i < keys.length; i++) {
+			data[i] = test_data.get(keys[i]);
+		}
+		
+		int hashtable_size = (int)(data.length / 2);
+		
+		LomutoPerfectHashTable lpht = new LomutoPerfectHashTable(hashtable_size);
+		lpht.putData(keys, data);
+		
+		Object results_data[] = new Object[data.length]; 
+		for(int i = 0; i < keys.length; i++) {
+			results_data[i] = lpht.get(keys[i]);
+		}
+		
+		assertArrayEquals(data, results_data);
 	}
 
 }
