@@ -21,5 +21,10 @@ class HashtableTest {
 		
 		assertArrayEquals(hashes, expected);
 	}
+	
+	@Test
+	void testLomutoPerfectHashTable() {
+		
+	}
 
 }
