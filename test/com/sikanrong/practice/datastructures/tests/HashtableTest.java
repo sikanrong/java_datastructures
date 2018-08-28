@@ -19,7 +19,7 @@ class HashtableTest {
 			hashes[i] = (FNVHash.hash(examples[i]));
 		}
 		
-		int expected[] = {310551791, 192771031, 1586795959, 1852403975};
+		int expected[] = {457582511, 581238876, 516259747, 1120420732};
 		
 		assertArrayEquals(expected, hashes);
 	}
@@ -40,7 +40,7 @@ class HashtableTest {
 		
 		int hashtable_size = (int)(data.length / 2);
 		
-		LomutoPerfectHashTable lpht = new LomutoPerfectHashTable(hashtable_size);
+		LomutoPerfectHashTable<String> lpht = new LomutoPerfectHashTable<>(hashtable_size);
 		lpht.putData(keys, data);
 		
 		Object results_data[] = new Object[data.length]; 

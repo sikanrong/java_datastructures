@@ -2,8 +2,9 @@ package com.sikanrong.practice.datastructures.hashtable;
 import com.sikanrong.practice.datastructures.hashtable.hashfunction.FNVHash;
 import java.lang.Exception;
 import java.lang.Math;
+import java.io.Serializable;
 
-public class LomutoPerfectHashTable {
+public class LomutoPerfectHashTable<T extends Serializable> {
 	private Object values[][];
 	private Object buckets[][][];
 	private byte buckets_load[];
@@ -17,7 +18,7 @@ public class LomutoPerfectHashTable {
 		this.values = new Object[this.storage_size][];
 	}
 	
-	public void putData(String keys[], Object data[]) throws Exception {
+	public void putData(T keys[], Object data[]) throws Exception {
 		if(keys.length != data.length) {
 			throw new Exception("setData keys array must match values array length");
 		}
@@ -31,9 +32,9 @@ public class LomutoPerfectHashTable {
 		hashValues(keys, data);
 	}
 	
-	private void hashValues(String keys[], Object data[]) {
+	private void hashValues(T keys[], Object data[]) {
 		for(int i = 0; i < keys.length; i++) {
-			int bucket_idx = FNVHash.hash(keys[i]) % this.storage_size;
+			int bucket_idx = FNVHash.<T>hash(keys[i]) % this.storage_size;
 			Object subBucket[] = buckets[bucket_idx][buckets_load[bucket_idx]];
 			subBucket[0] = keys[i];
 			subBucket[1] = i;
@@ -57,7 +58,8 @@ public class LomutoPerfectHashTable {
 			
 			Object slots[] = new Object[buckets_load[i]];
 			while(item < buckets_load[i]) {
-				int hsh = FNVHash.hash((String)buckets[i][item][0], offset);
+				@SuppressWarnings("unchecked")
+				int hsh = FNVHash.<T>hash((T)buckets[i][item][0], offset);
 				int slot =  hsh % values_secondary_size;
 
 				//check if slot exists in slots so far using linear search.
@@ -90,11 +92,11 @@ public class LomutoPerfectHashTable {
 		}
 	}
 	
-	public Object get(String key) {
-		int b = FNVHash.hash(key) % this.storage_size;
+	public Object get(T key) {
+		int b = FNVHash.<T>hash(key) % this.storage_size;
 		int d = (int)this.values[b][0];
 		int m = (int)this.values[b][1];
-		int c = FNVHash.hash(key, d) % m;
+		int c = FNVHash.<T>hash(key, d) % m;
 		return this.values[b][c + 2];
 	}
 }
